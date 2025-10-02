@@ -41,7 +41,7 @@ try {
 <body>
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-grey fixed-top" style="background-color: rgba(78, 78, 78, 0.8);">
-      <a class="navbar-brand " href="index.html" style="color: white;">
+      <a class="navbar-brand " href="../index.html" style="color: white;">
         <img src="../anotherbanner.png" width="30" height="30" class="d-inline-block align-top" alt="">
         MK Watches
       </a>
@@ -69,14 +69,14 @@ try {
           </li>
     
           <li class="nav-item">
-            <a class="nav-link" href="Loginpage.html"style="color: white;">Login</a>
+            <a class="nav-link" href="../Loginpage.html"style="color: white;">Login</a>
           </li>
     
           <li class="nav-item">
             <a class="nav-link" href="Register.html"style="color: white;">Register</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="admin/login.php" style="color: white;">Staff Login</a>
+            <a class="nav-link" href="login.php" style="color: white;">Staff Login</a>
           </li>
         </ul>
         <div class="nav-item dropdown">
