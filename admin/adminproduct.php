@@ -39,6 +39,79 @@ try {
 </style>
 </head>
 <body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-grey fixed-top" style="background-color: rgba(78, 78, 78, 0.8);">
+      <a class="navbar-brand " href="index.html" style="color: white;">
+        <img src="../anotherbanner.png" width="30" height="30" class="d-inline-block align-top" alt="">
+        MK Watches
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="index.html" style="color: white;">Home <span class="sr-only">(current)</span></a>
+          </li>
+    
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false" style="color: white;">
+              The Collection
+            </a>
+            <div class="dropdown-menu">
+              <a class="dropdown-item" href="Productpage.html?category=men">Mens</a>
+              <a class="dropdown-item" href="Productpage.html?category=women">Ladies</a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="Productpage.html?category=kids">Children</a>
+            </div>
+          </li>
+    
+          <li class="nav-item">
+            <a class="nav-link" href="Loginpage.html"style="color: white;">Login</a>
+          </li>
+    
+          <li class="nav-item">
+            <a class="nav-link" href="Register.html"style="color: white;">Register</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="admin/login.php" style="color: white;">Staff Login</a>
+          </li>
+        </ul>
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="cartDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: white;"> <img src="../shopping-cart.png" width="30" height="30" class="d-inline-block align-top" alt="" color="white">
+            Cart (<span id="cart-count">0</span>)
+          </a>
+          <div class="dropdown-menu dropdown-menu-right p-3" aria-labelledby="cartDropdown" style="min-width: 250px;">
+            <div id="cart-items">No items in cart</div>
+            <div class="dropdown-divider"></div>
+            <strong>Total: £<span id="cart-total">0.00</span></strong>
+            <a href ="cart.html">
+            <button style="background-color: black; color: white; border: black;">Check out</button>
+          </a>
+          </div>
+        </div>
+        </div>
+    
+        <form class="form-inline my-2 my-lg-0">
+          <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+          <button class="btn my-2 my-sm-0" type="submit" style="background-color: white; color: rgb(4, 4, 4); border: 1px solid white;">
+            Search
+          </button>
+        </form>
+      </div>
+    </nav>
+    <br><br><br>
+    <!-- Filter Buttons -->
+<div class="text-center mb-4">
+    <button class="btn btn-outline-light mx-1 filter-btn" data-category="all">All</button>
+    <button class="btn btn-outline-light mx-1 filter-btn" data-category="men">Men</button>
+    <button class="btn btn-outline-light mx-1 filter-btn" data-category="women">Women</button>
+    <button class="btn btn-outline-light mx-1 filter-btn" data-category="kids">Kids</button>
+</div>
+
+<!-- Product cards -->
 
 <div class="container">
     <h1 class="text-center mb-4">Product Shopfront (Admin Test)</h1>
@@ -46,7 +119,15 @@ try {
     <div class="row">
         <?php if (!empty($products)): ?>
             <?php foreach ($products as $p): ?>
-                <div class="col-md-4 mb-4 product" data-category="<?= htmlspecialchars($p['category']) ?>">
+              <?php
+    // Map database category to filter category
+    $filterCategory = strtolower($p['category']); // default lowercase
+    if ($filterCategory === 'mens') $filterCategory = 'men';
+    if ($filterCategory === 'ladies') $filterCategory = 'women';
+    if ($filterCategory === 'children') $filterCategory = 'kids';
+?>
+<div class="col-md-4 mb-4 product" data-category="<?= $filterCategory ?>">
+
                     <div class="card">
                         <img src="../uploads/<?= htmlspecialchars($p['image']) ?>" class="card-img-top" alt="<?= htmlspecialchars($p['name']) ?>">
                         <div class="card-body">
@@ -139,5 +220,37 @@ document.querySelectorAll('.view-details-btn').forEach(btn => {
     });
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const products = document.querySelectorAll('.product');
+
+    function filterProducts(category) {
+      category = category.toLowerCase();
+        products.forEach(product => {
+            const productCategory = product.getAttribute('data-category').toLowerCase();
+            if (category === 'all' || productCategory === category) {
+                product.style.display = 'block';
+            } else {
+                product.style.display = 'none';
+            }
+        });
+    }
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const category = button.getAttribute('data-category');
+            filterProducts(category);
+        });
+    });
+
+    // Optional: filter based on URL param on page load
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialCategory = urlParams.get('category') || 'all';
+    filterProducts(initialCategory);
+});
+</script>
+
+
 </body>
 </html>
