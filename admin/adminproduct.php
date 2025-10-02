@@ -18,7 +18,7 @@ try {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Product Page | MK Watches</title>
+<title>MK Watches Shop</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 <style>
     body { background-color: #1b1a1a; color: #fff; }
@@ -69,11 +69,11 @@ try {
           </li>
     
           <li class="nav-item">
-            <a class="nav-link" href="../Loginpage.html"style="color: white;">Login</a>
+            <a class="nav-link" href="/mkwatches/Loginpage.html"style="color: white;">Login</a>
           </li>
     
           <li class="nav-item">
-            <a class="nav-link" href="Register.html"style="color: white;">Register</a>
+            <a class="nav-link" href="/mkwatches/Register.html"style="color: white;">Register</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="login.php" style="color: white;">Staff Login</a>
@@ -114,7 +114,7 @@ try {
 <!-- Product cards -->
 
 <div class="container">
-    <h1 class="text-center mb-4">Product Shopfront (Admin Test)</h1>
+    <h1 class="text-center mb-4">Wonderful Watches</h1>
 
     <div class="row">
         <?php if (!empty($products)): ?>
