@@ -1,0 +1,67 @@
+// ===== Homepage Test =====
+describe('MK Watches - Homepage', () => {
+  it('should load the homepage and show MK Watches text', () => {
+    cy.visit('http://localhost/mkwatches');
+    cy.contains('MK Watches'); // checks that the homepage contains this text
+  });
+});
+
+// ===== Navbar Dropdown Tests =====
+describe('Navbar Dropdown', () => {
+  it('should open The Collection dropdown and go to Mens category', () => {
+    cy.visit('http://localhost/mkwatches');
+    cy.contains('The Collection').click(); // open dropdown
+    cy.contains('a', 'Mens').click(); // click Mens
+    cy.url().should('include', 'category=men'); // check URL
+  });
+
+  it('should open The Collection dropdown and go to Ladies category', () => {
+    cy.visit('http://localhost/mkwatches');
+    cy.contains('The Collection').click(); 
+    cy.contains('a', 'Ladies').click(); 
+    cy.url().should('include', 'category=women');
+  });
+
+  it('should open The Collection dropdown and go to Children category', () => {
+    cy.visit('http://localhost/mkwatches');
+    cy.contains('The Collection').click(); 
+    cy.contains('a', 'Children').click(); 
+    cy.url().should('include', 'category=kids');
+  });
+});
+
+// ===== Product Modal Tests =====
+describe('Product Modal', () => {
+  it('should open the product modal when a product is clicked', () => {
+    cy.visit('http://localhost/mkwatches');
+    cy.get('.card .btn').first().click(); // clicks "View Details" of first product
+    cy.url().should('include', 'category=men'); // navigates to product page
+  });
+});
+
+// ===== Add to Cart Tests =====
+describe('Shopping Cart - Add', () => {
+  it('should increase cart count when adding a product', () => {
+    cy.visit('http://localhost/mkwatches');
+    // Simulate clicking the first "View Details" to go to product page
+    cy.get('.card .btn').first().click();
+    // Then click "Add to Cart" button (ensure button has class 'add-to-cart')
+    cy.get('.add-to-cart').first().click();
+    cy.get('#cart-count').should('contain', '1'); // check cart counter
+  });
+});
+
+// ===== Remove from Cart Tests =====
+describe('Shopping Cart - Remove', () => {
+  it('should remove a product from the cart', () => {
+    cy.visit('http://localhost/mkwatches');
+    // Add a product first
+    cy.get('.card .btn').first().click();
+    cy.get('.add-to-cart').first().click();
+
+    // Open cart dropdown and remove item
+    cy.get('#cartDropdown').click();
+    cy.get('.remove-item').first().click(); // remove first item
+    cy.get('#cart-count').should('contain', '0'); // cart should be empty
+  });
+});
