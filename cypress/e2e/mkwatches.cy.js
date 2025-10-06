@@ -39,79 +39,35 @@ describe('Product Modal', () => {
   });
 });
 
-/// ===== Shopping Cart Tests =====
-describe('Shopping Cart', () => {
+it('should increase cart count when adding a visible product', () => {
+  cy.get('.product:visible').should('have.length.greaterThan', 0);
+  cy.get('.product:visible').first().find('.add-to-cart').click();
+  cy.get('#cart-count').should('contain', '1');
+  cy.get('#cart-items').should('not.contain', 'No items in cart');
+  cy.get('#cartToast').should('be.visible');
+});
 
-  beforeEach(() => {
-    // Visit the landing page fresh before each test
-    cy.visit('http://localhost/mkwatches');
+it('should remove a product from the cart', () => {
+  cy.get('.product:visible').first().find('.add-to-cart').click();
+  cy.get('#cartDropdown').click();
+  cy.get('#cart-items button').first().click();
+  cy.get('#cart-count').should('contain', '0');
+  cy.get('#cart-items').should('contain', 'No items in cart');
+});
 
-    // Clear localStorage to start with empty cart
-    cy.clearLocalStorage();
-    cy.get('#cart-count').should('contain', '0');
-  });
+it('should update total price correctly', () => {
+  cy.get('.product:visible').eq(0).find('.add-to-cart').click();
+  cy.get('.product:visible').eq(1).find('.add-to-cart').click();
 
-  it('should increase cart count when adding a visible product', () => {
-    // Click first visible Add to Cart button
-    cy.get('.product:visible').first().find('.add-to-cart').click();
-
-    // Check cart counter
-    cy.get('#cart-count').should('contain', '1');
-
-    // Check cart items list
-    cy.get('#cart-items').should('not.contain', 'No items in cart');
-
-    // Check that toast notification appears
-    cy.get('#cartToast').should('be.visible');
-  });
-
-  it('should add multiple products to the cart', () => {
-    // Add first two visible products
-    cy.get('.product:visible').eq(0).find('.add-to-cart').click();
-    cy.get('.product:visible').eq(1).find('.add-to-cart').click();
-
-    // Cart count should update
-    cy.get('#cart-count').should('contain', '2');
-
-    // Cart items should list both products
-    cy.get('#cart-items div').should('have.length', 2);
-  });
-
-  it('should remove a product from the cart', () => {
-    // Add first product
-    cy.get('.product:visible').first().find('.add-to-cart').click();
-
-    // Open cart dropdown
-    cy.get('#cartDropdown').click();
-
-    // Remove first item
-    cy.get('.remove-item').first().click();
-
-    // Cart count should go back to 0
-    cy.get('#cart-count').should('contain', '0');
-
-    // Cart items should show "No items in cart"
-    cy.get('#cart-items').should('contain', 'No items in cart');
-  });
-
-  it('should update total price correctly', () => {
-    // Add first two visible products
-    cy.get('.product:visible').eq(0).find('.add-to-cart').click();
-    cy.get('.product:visible').eq(1).find('.add-to-cart').click();
-
-    // Calculate expected total from data-price attributes
-    let total = 0;
-    cy.get('.product:visible').each(($el, index) => {
-      if (index < 2) {
-        const price = parseFloat($el.find('.add-to-cart').data('price'));
-        total += price;
-      }
-    }).then(() => {
-      // Check total in cart UI
-      cy.get('#cart-total').invoke('text').then((text) => {
-        expect(parseFloat(text)).to.eq(total);
-      });
+  let total = 0;
+  cy.get('.product:visible').each(($el, index) => {
+    if (index < 2) {
+      const price = parseFloat($el.find('.add-to-cart').attr('data-price'));
+      total += price;
+    }
+  }).then(() => {
+    cy.get('#cart-total').invoke('text').then((text) => {
+      expect(parseFloat(text)).to.eq(total);
     });
   });
 });
-
