@@ -3,7 +3,7 @@
 
 require_once __DIR__ . '/../inc/config.php'; 
 require_once __DIR__ . '/../inc/functions.php';
-require_login();
+
 
 try {
     $stmt = $pdo->query("SELECT * FROM products ORDER BY id DESC");
