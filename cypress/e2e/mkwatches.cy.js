@@ -39,29 +39,79 @@ describe('Product Modal', () => {
   });
 });
 
-// ===== Add to Cart Tests =====
-describe('Shopping Cart - Add', () => {
-  it('should increase cart count when adding a product', () => {
-    cy.visit('http://localhost/mkwatches');
-    // Simulate clicking the first "View Details" to go to product page
-    cy.get('.card .btn').first().click();
-    // Then click "Add to Cart" button (ensure button has class 'add-to-cart')
-    cy.get('.add-to-cart').first().click();
-    cy.get('#cart-count').should('contain', '1'); // check cart counter
-  });
-});
+/// ===== Shopping Cart Tests =====
+describe('Shopping Cart', () => {
 
-// ===== Remove from Cart Tests =====
-describe('Shopping Cart - Remove', () => {
+  beforeEach(() => {
+    // Visit the landing page fresh before each test
+    cy.visit('http://localhost/mkwatches');
+
+    // Clear localStorage to start with empty cart
+    cy.clearLocalStorage();
+    cy.get('#cart-count').should('contain', '0');
+  });
+
+  it('should increase cart count when adding a visible product', () => {
+    // Click first visible Add to Cart button
+    cy.get('.product:visible').first().find('.add-to-cart').click();
+
+    // Check cart counter
+    cy.get('#cart-count').should('contain', '1');
+
+    // Check cart items list
+    cy.get('#cart-items').should('not.contain', 'No items in cart');
+
+    // Check that toast notification appears
+    cy.get('#cartToast').should('be.visible');
+  });
+
+  it('should add multiple products to the cart', () => {
+    // Add first two visible products
+    cy.get('.product:visible').eq(0).find('.add-to-cart').click();
+    cy.get('.product:visible').eq(1).find('.add-to-cart').click();
+
+    // Cart count should update
+    cy.get('#cart-count').should('contain', '2');
+
+    // Cart items should list both products
+    cy.get('#cart-items div').should('have.length', 2);
+  });
+
   it('should remove a product from the cart', () => {
-    cy.visit('http://localhost/mkwatches');
-    // Add a product first
-    cy.get('.card .btn').first().click();
-    cy.get('.add-to-cart').first().click();
+    // Add first product
+    cy.get('.product:visible').first().find('.add-to-cart').click();
 
-    // Open cart dropdown and remove item
+    // Open cart dropdown
     cy.get('#cartDropdown').click();
-    cy.get('.remove-item').first().click(); // remove first item
-    cy.get('#cart-count').should('contain', '0'); // cart should be empty
+
+    // Remove first item
+    cy.get('.remove-item').first().click();
+
+    // Cart count should go back to 0
+    cy.get('#cart-count').should('contain', '0');
+
+    // Cart items should show "No items in cart"
+    cy.get('#cart-items').should('contain', 'No items in cart');
+  });
+
+  it('should update total price correctly', () => {
+    // Add first two visible products
+    cy.get('.product:visible').eq(0).find('.add-to-cart').click();
+    cy.get('.product:visible').eq(1).find('.add-to-cart').click();
+
+    // Calculate expected total from data-price attributes
+    let total = 0;
+    cy.get('.product:visible').each(($el, index) => {
+      if (index < 2) {
+        const price = parseFloat($el.find('.add-to-cart').data('price'));
+        total += price;
+      }
+    }).then(() => {
+      // Check total in cart UI
+      cy.get('#cart-total').invoke('text').then((text) => {
+        expect(parseFloat(text)).to.eq(total);
+      });
+    });
   });
 });
+
