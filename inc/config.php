@@ -5,12 +5,12 @@ declare(strict_types=1);
 session_start();
 
 define('DB_HOST', '127.0.0.1');
+define('DB_PORT', 3307); // Add this
 define('DB_NAME', 'mk_watches');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 
-
-$dsn = "mysql:host=".DB_HOST.";dbname=".DB_NAME.";charset=utf8mb4";
+$dsn = "mysql:host=".DB_HOST.";port=".DB_PORT.";dbname=".DB_NAME.";charset=utf8mb4";
 
 try {
     $pdo = new PDO($dsn, DB_USER, DB_PASS, [
@@ -19,6 +19,5 @@ try {
         PDO::ATTR_EMULATE_PREPARES => false,
     ]);
 } catch (PDOException $e) {
-   
     die("Database connection failed: " . htmlspecialchars($e->getMessage()));
 }
