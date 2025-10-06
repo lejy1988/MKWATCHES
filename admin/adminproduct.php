@@ -87,7 +87,7 @@ try {
             <div id="cart-items">No items in cart</div>
             <div class="dropdown-divider"></div>
             <strong>Total: £<span id="cart-total">0.00</span></strong>
-            <a href ="cart.html">
+            <a href ="../cart.html">
             <button style="background-color: black; color: white; border: black;">Check out</button>
           </a>
           </div>
@@ -179,8 +179,12 @@ try {
 let cart = JSON.parse(localStorage.getItem('mkCart')) || [];
 
 function updateCartUI() {
-    console.log("Cart:", cart);
+    const cartCount = cart.length;
+    const cartItems = cart.map(item => `<div>${item.title} - £${item.price.toFixed(2)}</div>`).join('');
+    document.getElementById('cart-count').textContent = cartCount;
+    document.getElementById('cart-items').innerHTML = cartItems || 'No items in cart';
 }
+
 
 updateCartUI();
 
