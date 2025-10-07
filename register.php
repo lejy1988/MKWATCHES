@@ -1,3 +1,60 @@
+<?php
+//include database connection
+
+$host = "localhost";
+$user = "root";
+$password = "";
+$database = "mk_watches";
+
+$conn = new mysqli($host, $user, $pass, $db);
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
+}
+
+$message = "";
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $name = trim($_POST["name"]);
+    $email = trim($_POST["email"]);
+    $password = $_POST["password"];
+    $confirm_password = $_POST["confirm-password"];
+
+    if ($password !== $confirm_password) {
+        $message = "❌ Passwords do not match.";
+    } elseif (empty($name) || empty($email) || empty($password)) {
+        $message = "⚠️ All fields are required.";
+    } else {
+        // Check for duplicate email
+        $check = $conn->prepare("SELECT id FROM users WHERE email = ?");
+        $check->bind_param("s", $email);
+        $check->execute();
+        $check->store_result();
+
+        if ($check->num_rows > 0) {
+            $message = "⚠️ That email is already registered.";
+        } else {
+            // Hash password
+            $hash = password_hash($password, PASSWORD_DEFAULT);
+
+            // Insert user
+            $insert = $conn->prepare("INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)");
+            $insert->bind_param("sss", $name, $email, $hash);
+
+            if ($insert->execute()) {
+                $message = "✅ Registration successful! You can now log in.";
+            } else {
+                $message = "❌ Error: " . $insert->error;
+            }
+
+            $insert->close();
+        }
+        $check->close();
+    }
+}
+
+$conn->close();
+?>
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -64,6 +121,8 @@
           </div>
         </div>
         </div>
+        <?php if (!empty($message)) echo "<div class='alert alert-info text-center'>$message</div>"; ?>
+
         <form class="form-inline my-2 my-lg-0">
           <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
           <button class="btn my-2 my-sm-0" type="submit" style="background-color: white; color: rgb(4, 4, 4); border: 1px solid white;">
@@ -83,7 +142,8 @@
         
             <!-- Right Section for Form -->
             <div class="col-md-6 d-flex justify-content-center align-items-center">
-              <form action="submit-form" method="post" style="color: white; width: 100%; max-width: 500px;">
+            <form action="register.php" method="post" style="color: white; width: 100%; max-width: 500px;">
+
                 <h1 class="text-center">Register</h1>
                 <div class="mb-3">
                   <label for="source" class="form-label">Where did you hear about us?</label>
