@@ -1,59 +1,60 @@
 <?php
-//include database connection
-
+// Database connection
 $host = "localhost";
-$user = "root";
-$password = "";
-$database = "mk_watches";
+$user = "root"; // your MySQL username
+$pass = "";     // your MySQL password (leave empty if using XAMPP default)
+$dbname = "mk_watches"; // your database name
 
-$conn = new mysqli($host, $user, $pass, $db);
-if ($conn->connect_error) {
-    die("Database connection failed: " . $conn->connect_error);
+// Create connection
+$db = new mysqli($host, $user, $pass, $dbname);
+
+// Check connection
+if ($db->connect_error) {
+    die("Connection failed: " . $db->connect_error);
 }
 
-$message = "";
-
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
+// Handle form submission
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = trim($_POST["name"]);
     $email = trim($_POST["email"]);
     $password = $_POST["password"];
-    $confirm_password = $_POST["confirm-password"];
+    $confirm_password = $_POST["confirm_password"];
 
+    // Check password match
     if ($password !== $confirm_password) {
-        $message = "❌ Passwords do not match.";
-    } elseif (empty($name) || empty($email) || empty($password)) {
-        $message = "⚠️ All fields are required.";
-    } else {
-        // Check for duplicate email
-        $check = $conn->prepare("SELECT id FROM users WHERE email = ?");
-        $check->bind_param("s", $email);
-        $check->execute();
-        $check->store_result();
-
-        if ($check->num_rows > 0) {
-            $message = "⚠️ That email is already registered.";
-        } else {
-            // Hash password
-            $hash = password_hash($password, PASSWORD_DEFAULT);
-
-            // Insert user
-            $insert = $conn->prepare("INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)");
-            $insert->bind_param("sss", $name, $email, $hash);
-
-            if ($insert->execute()) {
-                $message = "✅ Registration successful! You can now log in.";
-            } else {
-                $message = "❌ Error: " . $insert->error;
-            }
-
-            $insert->close();
-        }
-        $check->close();
+        die("❌ Passwords do not match.");
     }
-}
 
-$conn->close();
+    // Check if email already exists
+    $check = $db->prepare("SELECT id FROM users WHERE email = ?");
+    $check->bind_param("s", $email);
+    $check->execute();
+    $check->store_result();
+
+    if ($check->num_rows > 0) {
+        die("⚠️ That email is already registered.");
+    }
+
+    // Hash password
+    $password_hash = password_hash($password, PASSWORD_DEFAULT);
+
+    // Insert user
+    $insert = $db->prepare("INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)");
+    $insert->bind_param("sss", $name, $email, $password_hash);
+
+    if ($insert->execute()) {
+        echo "✅ Registration successful! You can now log in.";
+    } else {
+        echo "❌ Error: " . $insert->error;
+    }
+
+    $insert->close();
+    $check->close();
+    $db->close();
+}
 ?>
+
+
 
 <!DOCTYPE html>
 <html>
@@ -121,7 +122,6 @@ $conn->close();
           </div>
         </div>
         </div>
-        <?php if (!empty($message)) echo "<div class='alert alert-info text-center'>$message</div>"; ?>
 
         <form class="form-inline my-2 my-lg-0">
           <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
@@ -142,6 +142,7 @@ $conn->close();
         
             <!-- Right Section for Form -->
             <div class="col-md-6 d-flex justify-content-center align-items-center">
+            <?php if (!empty($message)) echo "<div class='alert alert-info text-center'>$message</div>"; ?>
             <form action="register.php" method="post" style="color: white; width: 100%; max-width: 500px;">
 
                 <h1 class="text-center">Register</h1>
@@ -194,8 +195,8 @@ $conn->close();
                   <input type="password" id="password" name="password" placeholder="Enter your Password" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                  <label for="confirm-password">Confirm Password:</label>
-                  <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your Password" class="form-control" required>
+                  <label for="confirm_password">Confirm Password:</label>
+                  <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm your Password" class="form-control" required>
                 </div>
                 <hr>
                 <div class="d-flex justify-content-between">
