@@ -1,3 +1,47 @@
+<?php
+session_start();
+
+// Database connection
+$host = "localhost";
+$user = "root"; // XAMPP default
+$pass = "";     // XAMPP default
+$dbname = "mk_watches";
+
+$db = new mysqli($host, $user, $pass, $dbname);
+if ($db->connect_error) {
+    die("Connection failed: " . $db->connect_error);
+}
+
+$error = "";
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $email = trim($_POST["email"]);
+    $password = $_POST["password"];
+
+    // Find the user
+    $stmt = $db->prepare("SELECT id, password_hash FROM users WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 1) {
+        $user = $result->fetch_assoc();
+        // Check password
+        if (password_verify($password, $user["password_hash"])) {
+            $_SESSION["user_id"] = $user["id"];
+            header("Location: index.php"); // redirect after login
+            exit;
+        } else {
+            $error = "❌ Incorrect password.";
+        }
+    } else {
+        $error = "❌ No account found with that email.";
+    }
+
+    $stmt->close();
+}
+?>
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -13,7 +57,7 @@
     
    
     <nav class="navbar navbar-expand-lg navbar-dark bg-grey fixed-top" style="background-color: rgba(78, 78, 78, 0.8)";>
-      <a class="navbar-brand " href="index.html" style="color: white;">
+      <a class="navbar-brand " href="index.php" style="color: white;">
         <img src="anotherbanner.png" width="30" height="30" class="d-inline-block align-top" alt="">
         MK Watches  
       </a>
@@ -25,7 +69,7 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item active">
-            <a class="nav-link" href="index.html" style="color: white;">Home <span class="sr-only">(current)</span></a>
+            <a class="nav-link" href="index.php" style="color: white;">Home <span class="sr-only">(current)</span></a>
           </li>
     
           <li class="nav-item dropdown">
@@ -82,18 +126,20 @@
     
       
         <div class="col-md-6 d-flex justify-content-center align-items-center">
-          <form action="submit-form" method="post" style="background-color: #f8f9fa; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); padding: 20px; width: 100%; max-width: 400px;">
+          <form action="login.php" method="post" style="background-color: #f8f9fa; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); padding: 20px; width: 100%; max-width: 400px;">
             <h1 class="text-center">Login</h1>
             <p class="text-center">Please enter your Email address and password below to login</p>
             <hr>
             <div class="mb-3">
-              <label for="name">Username:</label>
-              <input type="text" id="name" name="name" placeholder="Enter your Username" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label for="email">Password:</label>
-              <input type="password" id="email" name="email" placeholder="Enter your Password" class="form-control" required>
-            </div>
+  <label for="email">Email:</label>
+  <input type="email" id="email" name="email" placeholder="Enter your Email" class="form-control" required>
+</div>
+
+<div class="mb-3">
+  <label for="password">Password:</label>
+  <input type="password" id="password" name="password" placeholder="Enter your Password" class="form-control" required>
+</div>
+
             <div class="d-flex justify-content-between">
               <input type="submit" value="Login" class="btn btn-primary">
               <input type="reset" value="Reset" class="btn btn-secondary">

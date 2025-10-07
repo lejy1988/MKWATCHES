@@ -1,3 +1,7 @@
+<?php
+session_start();
+?>
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -39,13 +43,22 @@
             </div>
           </li>
     
-          <li class="nav-item">
-            <a class="nav-link" href="Loginpage.html"style="color: white;">Login</a>
-          </li>
-    
-          <li class="nav-item">
-            <a class="nav-link" href="Register.html"style="color: white;">Register</a>
-          </li>
+          <?php if (isset($_SESSION['user_id'])): ?>
+  <li class="nav-item">
+    <span class="nav-link text-light">Welcome back!</span>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link text-light" href="logout_user.php">Logout</a>
+  </li>
+<?php else: ?>
+  <li class="nav-item">
+    <a class="nav-link text-light" href="login.php">Login</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link text-light" href="register.php">Register</a>
+  </li>
+<?php endif; ?>
+
           <li class="nav-item">
             <a class="nav-link" href="admin/login.php" style="color: white;">Staff Login</a>
           </li>
