@@ -1,14 +1,11 @@
 <?php
 // Database connection
 $host = "localhost";
-$user = "root"; // your MySQL username
-$pass = "";     // your MySQL password (leave empty if using XAMPP default)
-$dbname = "mk_watches"; // your database name
+$user = "root";
+$pass = "";
+$dbname = "mk_watches";
 
-// Create connection
 $db = new mysqli($host, $user, $pass, $dbname);
-
-// Check connection
 if ($db->connect_error) {
     die("Connection failed: " . $db->connect_error);
 }
@@ -17,10 +14,11 @@ if ($db->connect_error) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = trim($_POST["name"]);
     $email = trim($_POST["email"]);
+    $postcode = trim($_POST["postcode"]);
     $password = $_POST["password"];
     $confirm_password = $_POST["confirm_password"];
 
-    // Check password match
+    // Password match check
     if ($password !== $confirm_password) {
         die("❌ Passwords do not match.");
     }
@@ -39,8 +37,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
     // Insert user
-    $insert = $db->prepare("INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)");
-    $insert->bind_param("sss", $name, $email, $password_hash);
+    $insert = $db->prepare("INSERT INTO users (name, email, postcode, password_hash) VALUES (?, ?, ?, ?)");
+    $insert->bind_param("ssss", $name, $email, $postcode, $password_hash);
 
     if ($insert->execute()) {
         echo "✅ Registration successful! You can now log in.";
@@ -56,6 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
 
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -66,7 +65,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
    
   </head>
-  <body style="background-color: #1b1a1a;">
+  <body style="background-color: #1b1a1a; display: flex; flex-direction: column; min-height: 100vh;">
+
     
    
     <nav class="navbar navbar-expand-lg navbar-dark bg-grey fixed-top" style="background-color: rgba(78, 78, 78, 0.8)";>
@@ -98,7 +98,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           </li>
     
           <li class="nav-item">
-            <a class="nav-link" href="Loginpage.html"style="color: white;">Login</a>
+            <a class="nav-link" href="Loginpage.php"style="color: white;">Login</a>
           </li>
     
           <li class="nav-item">
@@ -131,7 +131,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </form>
       </div>
     </nav>
-   
+   <main style="flex: 1;">
     <h1>Register</h1>
         <div class="container" style="min-height: 100vh; display: flex; align-items: center;">
           <div class="row w-100" style="min-height: 80vh;">
@@ -143,71 +143,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <!-- Right Section for Form -->
             <div class="col-md-6 d-flex justify-content-center align-items-center">
             <?php if (!empty($message)) echo "<div class='alert alert-info text-center'>$message</div>"; ?>
-            <form action="register.php" method="post" style="color: white; width: 100%; max-width: 500px;">
+            <form action="register.php" method="post">
+            <input type="text" name="name" class="form-control mb-3" placeholder="Enter your name" required>
+<input type="email" name="email" class="form-control mb-3" placeholder="Enter your email" required>
+<input type="text" name="postcode" class="form-control mb-3" placeholder="Enter your postcode" required>
+<input type="password" name="password" class="form-control mb-3" placeholder="Enter password" required>
+<input type="password" name="confirm_password" class="form-control mb-3" placeholder="Confirm password" required>
+<input type="submit" class="btn btn-dark w-100" value="Register">
 
-                <h1 class="text-center">Register</h1>
-                <div class="mb-3">
-                  <label for="source" class="form-label">Where did you hear about us?</label>
-                  <select id="source" name="source" class="form-select" required>
-                    <option value="" disabled selected>Select an option</option>
-                    <option value="Google">Google</option>
-                    <option value="Word of Mouth">Word of Mouth</option>
-                    <option value="Advert in local paper">Advert in local paper</option>
-                    <option value="Yellow Pages">Yellow Pages</option>
-                    <option value="Local">Local</option>
-                  </select>
-                </div>
-                <div class="mb-3">
-                  <label for="name">First Name:</label>
-                  <input type="text" id="name" name="name" placeholder="Enter your First Name" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                  <label for="name">Last Name:</label>
-                  <input type="text" id="name" name="name" placeholder="Enter your Last Name" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                  <label for="number">Contact Number:</label>
-                  <input type="number" id="number" name="number" placeholder="Enter your Number" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                  <label for="dob">Date of Birth:</label>
-                  <input type="date" id="dob" name="dob" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                  <label for="address1">First Line of Address:</label>
-                  <input type="text" id="address1" name="address1" placeholder="Enter your First Line of Address" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                  <label for="address2">Second Line of Address:</label>
-                  <input type="text" id="address2" name="address2" placeholder="Enter your Second Line of Address" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                  <label for="postcode">Postcode:</label>
-                  <input type="text" id="postcode" name="postcode" placeholder="Enter your Postcode" class="form-control" required>
-                </div>
-                <hr>
-                <div class="mb-3">
-                  <label for="email">Register Email:</label>
-                  <input type="email" id="email" name="email" placeholder="Enter your Registration Email" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                  <label for="password">Password:</label>
-                  <input type="password" id="password" name="password" placeholder="Enter your Password" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                  <label for="confirm_password">Confirm Password:</label>
-                  <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm your Password" class="form-control" required>
-                </div>
-                <hr>
-                <div class="d-flex justify-content-between">
-                  <input type="submit" value="Submit" class="btn btn-primary mb1" style="background-color: black; color: white; border: white">
-                  <input type="reset" value="Reset" class="btn btn-secondary">
-              
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>       
+</form>
+  
        
         <script>
           //this is for the cart page and to locally store the cart information so it can be drawn into the cart page.
@@ -276,7 +221,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-QF1QIYkG0z6d+9QUGVZ8+K9q6p6W1p3yD1K9K1K9K1K9K1K9K1K9K1K9K1K9K1K" crossorigin="anonymous"></script>
        <!-- Include Bootstrap JS -->
        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
-       </body>
+       </main> 
        <hr style="border: 1px solid #f5f1f1; background-color: #000;">
        <footer class="bg-dark text-light py-4 mt-5">
         <div class="container text-center">
@@ -298,4 +243,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           <small class="text-muted">Privacy Policy | Terms of Service</small>
         </div>
       </footer>
+      </body>
+                
+       
+       
        

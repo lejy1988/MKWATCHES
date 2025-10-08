@@ -29,7 +29,7 @@ $products = $stmt->fetchAll();
 
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-  <a class="navbar-brand" href="../index.html">
+  <a class="navbar-brand" href="../index.php">
       <img src="../anotherbanner.png" width="30" height="30" class="d-inline-block align-top" alt=""> MK Watches
   </a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent"
@@ -39,7 +39,7 @@ $products = $stmt->fetchAll();
 
   <div class="collapse navbar-collapse" id="navbarContent">
       <ul class="navbar-nav mr-auto">
-          <li class="nav-item"><a class="nav-link" href="../index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="../index.php">Home</a></li>
           <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">Admin</a>
               <div class="dropdown-menu">
