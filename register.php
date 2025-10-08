@@ -4,6 +4,8 @@ $host = "localhost";
 $user = "root";
 $pass = "";
 $dbname = "mk_watches";
+$message = "";
+$message_type = ""; // "success" or "danger"
 
 $db = new mysqli($host, $user, $pass, $dbname);
 if ($db->connect_error) {
@@ -20,37 +22,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Password match check
     if ($password !== $confirm_password) {
-        die("❌ Passwords do not match.");
-    }
-
-    // Check if email already exists
-    $check = $db->prepare("SELECT id FROM users WHERE email = ?");
-    $check->bind_param("s", $email);
-    $check->execute();
-    $check->store_result();
-
-    if ($check->num_rows > 0) {
-        die("⚠️ That email is already registered.");
-    }
-
-    // Hash password
-    $password_hash = password_hash($password, PASSWORD_DEFAULT);
-
-    // Insert user
-    $insert = $db->prepare("INSERT INTO users (name, email, postcode, password_hash) VALUES (?, ?, ?, ?)");
-    $insert->bind_param("ssss", $name, $email, $postcode, $password_hash);
-
-    if ($insert->execute()) {
-        echo "✅ Registration successful! You can now log in.";
+        $message = "❌ Passwords do not match.";
+        $message_type = "danger";
     } else {
-        echo "❌ Error: " . $insert->error;
+        // Check if email already exists
+        $check = $db->prepare("SELECT id FROM users WHERE email = ?");
+        $check->bind_param("s", $email);
+        $check->execute();
+        $check->store_result();
+
+        if ($check->num_rows > 0) {
+            $message = "⚠️ That email is already registered.";
+            $message_type = "danger";
+        } else {
+            // Hash password
+            $password_hash = password_hash($password, PASSWORD_DEFAULT);
+
+            // Insert user
+            $insert = $db->prepare("INSERT INTO users (name, email, postcode, password_hash) VALUES (?, ?, ?, ?)");
+            $insert->bind_param("ssss", $name, $email, $postcode, $password_hash);
+
+            if ($insert->execute()) {
+                $message = "✅ Registration successful! You can now log in.";
+                $message_type = "success";
+            } else {
+                $message = "❌ Error: " . $insert->error;
+                $message_type = "danger";
+            }
+
+            $insert->close();
+        }
+
+        $check->close();
     }
 
-    $insert->close();
-    $check->close();
     $db->close();
 }
 ?>
+
 
 
 
@@ -122,6 +131,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           </div>
         </div>
         </div>
+        <?php if (!empty($message)): ?>
+    <div class="alert alert-<?= $message_type ?> text-center">
+        <?= htmlspecialchars($message) ?>
+    </div>
+<?php endif; ?>
 
         <form class="form-inline my-2 my-lg-0">
           <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
@@ -142,7 +156,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
             <!-- Right Section for Form -->
             <div class="col-md-6 d-flex justify-content-center align-items-center">
-            <?php if (!empty($message)) echo "<div class='alert alert-info text-center'>$message</div>"; ?>
+            
             <form action="register.php" method="post">
             <input type="text" name="name" class="form-control mb-3" placeholder="Enter your name" required>
 <input type="email" name="email" class="form-control mb-3" placeholder="Enter your email" required>
