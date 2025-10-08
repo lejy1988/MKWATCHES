@@ -1,5 +1,30 @@
 <?php
 session_start();
+// Auto-login via "Remember Me"
+if (isset($_COOKIE["remember_token"])) {
+  $token = $_COOKIE["remember_token"];
+
+  $db = new mysqli("localhost", "root", "", "mk_watches");
+  if (!$db->connect_error) {
+      $stmt = $db->prepare("SELECT id FROM users WHERE remember_token = ?");
+      $stmt->bind_param("s", $token);
+      $stmt->execute();
+      $result = $stmt->get_result();
+
+      if ($result && $result->num_rows === 1) {
+          $user = $result->fetch_assoc();
+          $_SESSION["user_id"] = $user["id"];
+          header("Location: dashboard.php");
+          exit;
+      }
+      $stmt->close();
+  }
+}
+
+
+// vars for messages
+$error = "";
+$success = "";
 
 // Database connection
 $host = "localhost";
@@ -9,36 +34,69 @@ $dbname = "mk_watches";
 
 $db = new mysqli($host, $user, $pass, $dbname);
 if ($db->connect_error) {
-    die("Connection failed: " . $db->connect_error);
-}
+    // don't die — surface the issue to the user with a friendly message
+    $error = "We're temporarily unable to connect to the database. Please try again later.";
+} else {
+    // If the form was submitted
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        // pull input safely
+        $email = trim($_POST["email"] ?? "");
+        $password = $_POST["password"] ?? "";
 
-$error = "";
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = trim($_POST["email"]);
-    $password = $_POST["password"];
-
-    // Find the user
-    $stmt = $db->prepare("SELECT id, password_hash FROM users WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows === 1) {
-        $user = $result->fetch_assoc();
-        // Check password
-        if (password_verify($password, $user["password_hash"])) {
-            $_SESSION["user_id"] = $user["id"];
-            header("Location: dashboard.php"); // redirect after login
-            exit;
+        // Basic server-side validation
+        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $error = "Please enter a valid email address.";
+        } elseif (empty($password)) {
+            $error = "Please enter your password.";
         } else {
-            $error = "❌ Incorrect password.";
+            // Look up the user
+            $stmt = $db->prepare("SELECT id, password_hash FROM users WHERE email = ?");
+            if ($stmt === false) {
+                $error = "A database error occurred. Please try again later.";
+            } else {
+                $stmt->bind_param("s", $email);
+                $stmt->execute();
+                $result = $stmt->get_result();
+
+                if ($result && $result->num_rows === 1) {
+                    $user = $result->fetch_assoc();
+                    if (password_verify($password, $user["password_hash"])) {
+                        // Successful login
+                        session_regenerate_id(true);
+                        $_SESSION["user_id"] = $user["id"];
+
+                        // Handle "Remember Me" option
+                        if (!empty($_POST['remember'])) {
+                          $token = bin2hex(random_bytes(16));
+                          setcookie("remember_token", $token, time() + (86400 * 30), "/", "", false, true); // 30 days
+                          $rememberStmt = $db->prepare("UPDATE users SET remember_token = ? WHERE id = ?");
+                          if ($rememberStmt) {
+                              $rememberStmt->bind_param("si", $token, $user["id"]);
+                              $rememberStmt->execute();
+                              $rememberStmt->close();
+                          }
+                      }
+                      
+
+                        // Redirect to dashboard
+                        header("Location: dashboard.php");
+                        exit;
+                    } else {
+                        $error = "❌ Incorrect password.";
+                    }
+                } else {
+                    $error = "❌ No account found with that email.";
+                }
+                $stmt->close();
+            }
         }
-    } else {
-        $error = "❌ No account found with that email.";
     }
 
-    $stmt->close();
+    // Optionally accept a success message via GET (e.g. after successful register)
+    if (!empty($_GET['success'])) {
+        // Do NOT trust arbitrary GET without escaping
+        $success = htmlspecialchars($_GET['success']);
+    }
 }
 ?>
 
@@ -126,7 +184,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
       
         <div class="col-md-6 d-flex justify-content-center align-items-center">
-          <form action="Loginpage.php" method="post" style="background-color: #f8f9fa; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); padding: 20px; width: 100%; max-width: 400px;">
+        <?php if ($error): ?>
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <?= htmlspecialchars($error) ?>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+<?php endif; ?>
+
+<?php if ($success): ?>
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <?= htmlspecialchars($success) ?>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+<?php endif; ?>
+  
+        <form action="Loginpage.php" method="post" style="background-color: #f8f9fa; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); padding: 20px; width: 100%; max-width: 400px;">
             <h1 class="text-center">Login</h1>
             <p class="text-center">Please enter your Email address and password below to login</p>
             <hr>
@@ -138,6 +214,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <div class="mb-3">
   <label for="password">Password:</label>
   <input type="password" id="password" name="password" placeholder="Enter your Password" class="form-control" required>
+</div>
+<div class="form-check mb-3">
+  <input class="form-check-input" type="checkbox" id="remember" name="remember">
+  <label class="form-check-label" for="remember">Remember me</label>
 </div>
 
             <div class="d-flex justify-content-between">
@@ -222,7 +302,26 @@ document.getElementById('cart-items').addEventListener('click', (event) => {
        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-QF1QIYkG0z6d+9QUGVZ8+K9q6p6W1p3yD1K9K1K9K1K9K1K9K1K9K1K9K1K9K1K" crossorigin="anonymous"></script>
        
        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
-       </body>
+       <script>
+document.querySelector("form").addEventListener("submit", function(e) {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailPattern.test(email)) {
+    e.preventDefault();
+    alert("Please enter a valid email address.");
+    return;
+  }
+
+  if (password.length < 6) {
+    e.preventDefault();
+    alert("Password must be at least 6 characters long.");
+  }
+});
+</script>
+ 
+      </body>
        
        <hr style="border: 1px solid #f5f1f1; background-color: #000;">
        <footer class="bg-dark text-light py-4 mt-5">
