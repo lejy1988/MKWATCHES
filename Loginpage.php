@@ -29,7 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Check password
         if (password_verify($password, $user["password_hash"])) {
             $_SESSION["user_id"] = $user["id"];
-            header("Location: index.php"); // redirect after login
+            header("Location: dashboard.php"); // redirect after login
             exit;
         } else {
             $error = "❌ Incorrect password.";

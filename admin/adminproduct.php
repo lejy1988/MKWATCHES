@@ -41,7 +41,7 @@ try {
 <body>
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-grey fixed-top" style="background-color: rgba(78, 78, 78, 0.8);">
-      <a class="navbar-brand " href="../index.html" style="color: white;">
+      <a class="navbar-brand " href="../index.php" style="color: white;">
         <img src="../anotherbanner.png" width="30" height="30" class="d-inline-block align-top" alt="">
         MK Watches
       </a>
