@@ -84,7 +84,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="Loginpage.html"style="color: white;">Login</a>
+            <a class="nav-link" href="Loginpage.php"style="color: white;">Login</a>
           </li>
     
           <li class="nav-item">
@@ -126,7 +126,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
       
         <div class="col-md-6 d-flex justify-content-center align-items-center">
-          <form action="login.php" method="post" style="background-color: #f8f9fa; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); padding: 20px; width: 100%; max-width: 400px;">
+          <form action="Loginpage.php" method="post" style="background-color: #f8f9fa; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); padding: 20px; width: 100%; max-width: 400px;">
             <h1 class="text-center">Login</h1>
             <p class="text-center">Please enter your Email address and password below to login</p>
             <hr>

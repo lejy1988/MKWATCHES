@@ -1,5 +1,24 @@
 <?php
 session_start();
+$welcomeName = "";
+
+if (isset($_SESSION["user_id"])) {
+    // Connect to DB
+    $db = new mysqli("localhost", "root", "", "mk_watches");
+    if ($db->connect_error) {
+        die("DB connection failed: " . $db->connect_error);
+    }
+
+    $stmt = $db->prepare("SELECT name FROM users WHERE id = ?");
+    $stmt->bind_param("i", $_SESSION["user_id"]);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows === 1) {
+        $user = $result->fetch_assoc();
+        $welcomeName = $user["name"];
+    }
+    $stmt->close();
+}
 ?>
 
 <!DOCTYPE html>
@@ -16,6 +35,7 @@ session_start();
     
    
     <nav class="navbar navbar-expand-lg navbar-dark bg-grey fixed-top" style="background-color: rgba(78, 78, 78, 0.8);">
+      
       <a class="navbar-brand " href="index.html" style="color: white;">
         <img src="anotherbanner.png" width="30" height="30" class="d-inline-block align-top" alt="">
         MK Watches
@@ -26,57 +46,57 @@ session_start();
       </button>
     
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-          <li class="nav-item active">
-            <a class="nav-link" href="index.html" style="color: white;">Home <span class="sr-only">(current)</span></a>
-          </li>
-    
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false" style="color: white;">
-              The Collection
-            </a>
-            <div class="dropdown-menu">
-              <a class="dropdown-item" href="http://localhost/mkwatches/admin/adminproduct.php?category=men">Mens</a>
-              <a class="dropdown-item" href="http://localhost/mkwatches/admin/adminproduct.php?category=women">Ladies</a>
-              <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="http://localhost/mkwatches/admin/adminproduct.php?category=kids">Children</a>
-            </div>
-          </li>
-    
-          <?php if (isset($_SESSION['user_id'])): ?>
-  <li class="nav-item">
-    <span class="nav-link text-light">Welcome back!</span>
+      <ul class="navbar-nav mr-auto">
+  <li class="nav-item active">
+    <a class="nav-link" href="index.html" style="color: white;">Home <span class="sr-only">(current)</span></a>
   </li>
-  <li class="nav-item">
-    <a class="nav-link text-light" href="logout_user.php">Logout</a>
-  </li>
-<?php else: ?>
-  <li class="nav-item">
-    <a class="nav-link text-light" href="login.php">Login</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link text-light" href="register.php">Register</a>
-  </li>
-<?php endif; ?>
 
-          <li class="nav-item">
-            <a class="nav-link" href="admin/login.php" style="color: white;">Staff Login</a>
-          </li>
-        </ul>
-        <div class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="cartDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: white;"> <img src="shopping-cart.png" width="30" height="30" class="d-inline-block align-top" alt="" color="white">
-            Cart (<span id="cart-count">0</span>)
-          </a>
-          <div class="dropdown-menu dropdown-menu-right p-3" aria-labelledby="cartDropdown" style="min-width: 250px;">
-            <div id="cart-items">No items in cart</div>
-            <div class="dropdown-divider"></div>
-            <strong>Total: £<span id="cart-total">0.00</span></strong>
-            <a href ="cart.html">
-            <button style="background-color: black; color: white; border: black;">Check out</button>
-          </a>
-          </div>
-        </div>
-        </div>
+  <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false" style="color: white;">
+      The Collection
+    </a>
+    <div class="dropdown-menu">
+      <a class="dropdown-item" href="http://localhost/mkwatches/admin/adminproduct.php?category=men">Mens</a>
+      <a class="dropdown-item" href="http://localhost/mkwatches/admin/adminproduct.php?category=women">Ladies</a>
+      <div class="dropdown-divider"></div>
+      <a class="dropdown-item" href="http://localhost/mkwatches/admin/adminproduct.php?category=kids">Children</a>
+    </div>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link" href="admin/login.php" style="color: white;">Staff Login</a>
+  </li>
+</ul>
+
+<div class="d-flex align-items-center">
+  <?php if (isset($_SESSION['user_id'])): ?>
+    <span class="nav-link text-light mr-3">
+      👋 Welcome, <?php echo htmlspecialchars($welcomeName); ?>!
+    </span>
+    <a class="nav-link text-light mr-3" href="logout_user.php">Logout</a>
+  <?php else: ?>
+    <a class="nav-link text-light mr-3" href="Loginpage.php">Login</a>
+    <a class="nav-link text-light mr-3" href="register.php">Register</a>
+  <?php endif; ?>
+
+  <div class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" id="cartDropdown" role="button" data-toggle="dropdown"
+      aria-haspopup="true" aria-expanded="false" style="color: white;">
+      <img src="shopping-cart.png" width="30" height="30" class="d-inline-block align-top" alt="">
+      Cart (<span id="cart-count">0</span>)
+    </a>
+    <div class="dropdown-menu dropdown-menu-right p-3" aria-labelledby="cartDropdown" style="min-width: 250px;">
+      <div id="cart-items">No items in cart</div>
+      <div class="dropdown-divider"></div>
+      <strong>Total: £<span id="cart-total">0.00</span></strong>
+      <a href="cart.html">
+        <button style="background-color: black; color: white; border: black;">Check out</button>
+      </a>
+    </div>
+  </div>
+</div>
+
+
     
         <form class="form-inline my-2 my-lg-0">
           <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
