@@ -143,6 +143,7 @@ try {
                             </button>
                             <button class="btn btn-light mt-2 add-to-cart" 
                                 data-title="<?= htmlspecialchars($p['name']) ?>"
+                                data-id="<?= $p['id'] ?>"
                                 data-price="<?= number_format($p['price'], 2) ?>">
                                 Add to Cart
                             </button>
@@ -193,7 +194,9 @@ document.querySelectorAll('.add-to-cart').forEach(btn => {
     btn.addEventListener('click', () => {
         const title = btn.dataset.title;
         const price = parseFloat(btn.dataset.price);
-        cart.push({title, price});
+        const id = btn.dataset.id;
+        cart.push({id, title, price});
+
         localStorage.setItem('mkCart', JSON.stringify(cart));
         updateCartUI();
         $('#cartToast').toast({delay: 2000}).toast('show');

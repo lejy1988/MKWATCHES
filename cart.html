@@ -46,7 +46,7 @@
             </div>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="Loginpage.html"style="color: white;">Login</a>
+            <a class="nav-link" href="Loginpage.php"style="color: white;">Login</a>
           </li>
     
           <li class="nav-item">
@@ -101,7 +101,23 @@
   <span>£<span id="cart-total">0.00</span></span>
 </div>
 
-<button class="btn btn-dark btn-block">Pay Now</button>
+<button id="payNowBtn" class="btn btn-dark btn-block">Pay Now</button>
+
+<script>
+document.getElementById('payNowBtn').addEventListener('click', () => {
+    const cart = JSON.parse(localStorage.getItem('mkCart')) || [];
+
+    fetch('checkout.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'cart=' + encodeURIComponent(JSON.stringify(cart))
+    })
+    .then(res => res.json())
+    .then(data => alert(data.message))
+    .catch(err => console.error(err));
+});
+</script>
+
 
         </div>
       </div>
